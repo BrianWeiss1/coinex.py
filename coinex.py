@@ -5,6 +5,7 @@ import time
 import hmac
 from urllib.parse import urlparse
 import requests
+from commands.decrypt import prompt_and_decrypt
 
 access_id = ""  # Replace with your access id
 secret_key = "" # Replace with your secret key
@@ -193,7 +194,42 @@ def set_leverage(leverage: int = 100):
 
     return response
 
-def market_buy(amount: str, side="buy", market: str = "BTCUSDT"):
+
+def set_stoploss(stoploss: str):
+    request_path = "/futures/set-position-stop-loss"
+    data = {
+        "market": "BTCUSDT",
+        "market_type": "FUTURES",
+        "stop_loss_type": "mark_price",
+        "stop_loss_price": stoploss,
+    }
+    data = json.dumps(data)
+    response = request_client.request(
+        "POST",
+        "{url}{request_path}".format(url=request_client.url, request_path=request_path),
+        data=data,
+    )
+
+    return response
+
+def set_takeprofit(takeprofit: str):
+    request_path = "/futures/set-position-take-profit"
+    data = {
+        "market": "BTCUSDT",
+        "market_type": "FUTURES",
+        "take_profit_type": "mark_price",
+        "take_profit_price": takeprofit,
+    }
+    data = json.dumps(data)
+    response = request_client.request(
+        "POST",
+        "{url}{request_path}".format(url=request_client.url, request_path=request_path),
+        data=data,
+    )
+
+    return response
+
+def market_buy(amount: str, stoploss: str = None, takeprofit: str = None, side="buy", market: str = "BTCUSDT"):
     request_path = "/futures/order"
     data = {
         "market": market,
@@ -211,11 +247,17 @@ def market_buy(amount: str, side="buy", market: str = "BTCUSDT"):
         "{url}{request_path}".format(url=request_client.url, request_path=request_path),
         data=data,
     )
+    if stoploss:
+        set_stoploss(stoploss)
+    if takeprofit:
+        set_takeprofit(takeprofit)
+    
+    
     return response
 
 
 
-def limt_buy(amount: str, price: str, side="buy", market: str = "BTCUSDT"):
+def limt_buy(amount: str, price: str, stoploss: str = None, takeprofit: str = None, side="buy", market: str = "BTCUSDT"):
     request_path = "/futures/order"
     data = {
         "market": market,
@@ -237,6 +279,13 @@ def limt_buy(amount: str, price: str, side="buy", market: str = "BTCUSDT"):
         "{url}{request_path}".format(url=request_client.url, request_path=request_path),
         data=data,
     )
+    
+    if stoploss:
+        set_stoploss(stoploss)
+    if takeprofit:
+        set_takeprofit(takeprofit)
+    
+    
     return response
 
 def run_code():
@@ -255,13 +304,12 @@ def run_code():
     currentBalance = float(get_futures_available())
     print("Total Balance: " + str(currentBalance))
 
-    positionSize = str(LEVERAGE * BETPERCENT * currentBalance / assetPrice)
+    size = str(LEVERAGE * BETPERCENT * currentBalance / assetPrice)
+    stopLoss = str(assetPrice * (1 - (STOPLOSS/LEVERAGE)))
 
-    response_5 = market_buy(positionSize)
+    response_5 = market_buy(size, stopLoss)
     if response_5.status_code == 200:
         print("Position Opened")
-
-
 
 if __name__ == "__main__":
     run_code()
