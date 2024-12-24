@@ -27,17 +27,21 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      # Step 4: Linting (Optional)
+      # Step 4: Install pytest (if not included in requirements.txt)
+      - name: Install pytest
+        run: pip install pytest
+
+      # Step 5: Linting (Optional)
       - name: Lint Code
         run: |
           pip install flake8
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
-      # Step 5: Run Tests
+      # Step 6: Run Tests
       - name: Run Tests
         run: pytest
 
-      # Step 6: Verify Secrets (Optional)
+      # Step 7: Verify Secrets (Optional)
       - name: Check API Key and Secret
         run: |
           if [[ -z "$ACCESS_ID" || -z "$SECRET_KEY" ]]; then
@@ -45,7 +49,7 @@ jobs:
             exit 1
           fi
 
-      # Step 7: Run Trading Script
+      # Step 8: Run Trading Script
       - name: Execute Trading Script
         env:
           ACCESS_ID: ${{ secrets.ACCESS_ID }}
