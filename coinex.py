@@ -5,8 +5,6 @@ import time
 import hmac
 from urllib.parse import urlparse
 import requests
-from commands.decrypt import prompt_and_decrypt
-
 access_id = ""  # Replace with your access id
 secret_key = "" # Replace with your secret key
 from enum import Enum
